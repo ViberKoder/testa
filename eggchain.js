@@ -1,7 +1,7 @@
 // Получаем API URL из window (инжектится через api/config.js)
 // Используем EGGCHAIN_API_URL если доступен, иначе извлекаем из API_URL
 const API_URL = window.EGGCHAIN_API_URL || (() => {
-    let apiUrl = window.API_URL || 'https://web-production-11ef2.up.railway.app/api';
+    let apiUrl = window.API_URL || 'https://web-production-9eac6.up.railway.app/api';
     if (apiUrl.endsWith('/api/stats')) {
         apiUrl = apiUrl.replace('/api/stats', '/api');
     } else if (apiUrl.endsWith('/stats')) {

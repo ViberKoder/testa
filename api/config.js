@@ -1,7 +1,7 @@
 // Vercel serverless function to inject API_URL
 // This function reads API_URL from environment variable and returns JavaScript code
 module.exports = function handler(req, res) {
-    let apiUrl = process.env.API_URL || 'https://web-production-11ef2.up.railway.app/api/stats';
+    let apiUrl = process.env.API_URL || 'https://web-production-9eac6.up.railway.app/api/stats';
     
     // Если указан /api/stats, извлекаем базовый URL для eggchain
     let baseApiUrl = apiUrl;

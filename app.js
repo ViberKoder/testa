@@ -28,7 +28,7 @@ function getUserID() {
 // API endpoint - get from environment or use default
 // For Vercel, set API_URL as environment variable
 // Default to Railway URL
-const API_URL = window.API_URL || 'https://web-production-11ef2.up.railway.app/api/stats';
+const API_URL = window.API_URL || 'https://web-production-9eac6.up.railway.app/api/stats';
 // Extract base URL for other API endpoints
 const BOT_API_URL = API_URL.endsWith('/api/stats') ? API_URL.replace('/api/stats', '') : API_URL.replace('/stats', '');
 
@@ -677,7 +677,7 @@ function init() {
 
 // Explorer functionality
 const EGGCHAIN_API_URL = window.EGGCHAIN_API_URL || (() => {
-    let apiUrl = window.API_URL || 'https://web-production-11ef2.up.railway.app/api/stats';
+    let apiUrl = window.API_URL || 'https://web-production-9eac6.up.railway.app/api/stats';
     if (apiUrl.endsWith('/api/stats')) {
         apiUrl = apiUrl.replace('/api/stats', '/api');
     } else if (apiUrl.endsWith('/stats')) {

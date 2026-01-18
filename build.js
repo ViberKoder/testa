@@ -3,7 +3,7 @@ const path = require('path');
 
 // Получаем API_URL из переменных окружения
 // Если указан /api/stats, извлекаем базовый URL
-let apiUrlEnv = process.env.API_URL || 'https://web-production-11ef2.up.railway.app/api/stats';
+let apiUrlEnv = process.env.API_URL || 'https://web-production-9eac6.up.railway.app/api/stats';
 // Убираем /api/stats или /stats из конца, если есть
 if (apiUrlEnv.endsWith('/api/stats')) {
     apiUrlEnv = apiUrlEnv.replace('/api/stats', '/api');
