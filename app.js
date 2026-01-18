@@ -1257,14 +1257,66 @@ function displayEggResult(egg) {
     const resultDiv = document.getElementById('explorer-search-result');
     if (!resultDiv) return;
     
-    const hatchedStatus = egg.hatched_by ? 'hatched' : 'pending';
-    const hatchedText = egg.hatched_by ? 'Hatched' : 'Pending';
+    // Для multi eggs: считаем вылупленным, если хотя бы 1 пользователь вылупил
+    const isMultiEgg = egg.is_multi === true;
+    const isHatched = isMultiEgg ? (egg.hatched_count > 0) : (egg.hatched_by ? true : false);
+    
+    const hatchedStatus = isHatched ? 'hatched' : 'pending';
+    const hatchedText = isHatched ? 'Hatched' : 'Pending';
     
     const timestampSent = egg.timestamp_sent ? new Date(egg.timestamp_sent).toLocaleString('en-US') : 'Unknown';
     const timestampHatched = egg.timestamp_hatched ? new Date(egg.timestamp_hatched).toLocaleString('en-US') : '—';
     
     const timeAgoSent = egg.timestamp_sent ? getTimeAgo(new Date(egg.timestamp_sent)) : '';
     const timeAgoHatched = egg.timestamp_hatched ? getTimeAgo(new Date(egg.timestamp_hatched)) : '';
+
+    // Формируем список вылупивших для multi eggs
+    let hatchedBySection = '';
+    if (isMultiEgg && isHatched && egg.hatched_by_users && egg.hatched_by_users.length > 0) {
+        hatchedBySection = `
+            <div class="info-section">
+                <div class="info-label">Hatched By (${egg.hatched_count}${egg.max_hatches ? `/${egg.max_hatches}` : ''})</div>
+                <div class="hatched-by-list">
+                    ${egg.hatched_by_users.map((user, index) => `
+                        <div class="hatched-by-item">
+                            <div class="info-value-with-avatar">
+                                ${user.avatar ? `<img src="${user.avatar}" class="user-avatar" onerror="this.style.display='none'">` : '<div class="user-avatar-placeholder"></div>'}
+                                ${user.username ? `
+                                <span class="username-link" onclick="event.stopPropagation(); searchUserByUsername('${user.username}');">
+                                    @${user.username}
+                                </span>
+                                ` : `
+                                <span class="username-link" onclick="event.stopPropagation(); viewUserEggs(${user.user_id}, '');">
+                                    User ID: ${user.user_id}
+                                </span>
+                                `}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    } else if (!isMultiEgg && egg.hatched_by) {
+        // Обычное яйцо - показываем одного вылупившего
+        hatchedBySection = `
+            <div class="info-section">
+                <div class="info-label">Hatched By</div>
+                <div class="info-value-with-avatar">
+                    ${egg.hatched_by_avatar ? `<img src="${egg.hatched_by_avatar}" class="user-avatar" onerror="this.style.display='none'">` : '<div class="user-avatar-placeholder"></div>'}
+                    ${egg.hatched_by_username ? `
+                    <span class="username-link" onclick="event.stopPropagation(); searchUserByUsername('${egg.hatched_by_username}');">
+                        @${egg.hatched_by_username}
+                    </span>
+                    ` : `
+                    <span class="username-link" onclick="event.stopPropagation(); viewUserEggs(${egg.hatched_by}, '');">
+                        User ID: ${egg.hatched_by}
+                    </span>
+                    `}
+                </div>
+                <div class="info-subvalue">${timestampHatched}${timeAgoHatched ? ` (${timeAgoHatched})` : ''}</div>
+            </div>
+        `;
+    }
 
     resultDiv.innerHTML = `
         <div class="egg-detail-card">
@@ -1275,6 +1327,7 @@ function displayEggResult(egg) {
                 <div class="egg-detail-title">
                     <h3>Egg #${egg.egg_id.substring(0, 8)}...</h3>
                     <span class="egg-status-badge ${hatchedStatus}">${hatchedText}</span>
+                    ${isMultiEgg ? `<span class="egg-multi-badge">Multi (${egg.hatched_count || 0}${egg.max_hatches ? `/${egg.max_hatches}` : ''})</span>` : ''}
                 </div>
             </div>
             
@@ -1308,24 +1361,7 @@ function displayEggResult(egg) {
                     <div class="info-subvalue">${timestampSent}${timeAgoSent ? ` (${timeAgoSent})` : ''}</div>
                 </div>
                 
-                ${egg.hatched_by ? `
-                <div class="info-section">
-                    <div class="info-label">Hatched By</div>
-                    <div class="info-value-with-avatar">
-                        ${egg.hatched_by_avatar ? `<img src="${egg.hatched_by_avatar}" class="user-avatar" onerror="this.style.display='none'">` : '<div class="user-avatar-placeholder"></div>'}
-                        ${egg.hatched_by_username ? `
-                        <span class="username-link" onclick="event.stopPropagation(); searchUserByUsername('${egg.hatched_by_username}');">
-                            @${egg.hatched_by_username}
-                        </span>
-                        ` : `
-                        <span class="username-link" onclick="event.stopPropagation(); viewUserEggs(${egg.hatched_by}, '');">
-                            User ID: ${egg.hatched_by}
-                        </span>
-                        `}
-                    </div>
-                    <div class="info-subvalue">${timestampHatched}${timeAgoHatched ? ` (${timeAgoHatched})` : ''}</div>
-                </div>
-                ` : ''}
+                ${hatchedBySection}
                 
                 <div class="info-section">
                     <div class="info-label">Transaction Hash</div>
