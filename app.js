@@ -531,8 +531,15 @@ function setupSubscribeButton() {
 // Buy Eggs - removed for beta (unlimited eggs)
 
 // Share Button
-// Используем Telegram Share Button согласно документации: https://core.telegram.org/widgets/share
+// Адаптация PHP кода из документации Telegram Share Button
+// https://core.telegram.org/widgets/share
 // Формат: https://t.me/share/url?url={url}&text={text}
+function telegramForwardButton(url, text = '') {
+    // Используем rawurlencode эквивалент в JavaScript - encodeURIComponent
+    const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text);
+    return shareUrl;
+}
+
 function setupShareButton() {
     const shareBtn = document.getElementById('share-egg-btn');
     if (!shareBtn) return;
@@ -540,13 +547,11 @@ function setupShareButton() {
     shareBtn.addEventListener('click', () => {
         const tg = window.Telegram?.WebApp;
         const message = '@tohatchbot egg';
-        const botUsername = 'tohatchbot';
         
-        // Используем Telegram Share Button формат
-        // URL обязателен для Telegram Share, используем URL бота
-        // Текст будет основным содержимым, которое пользователь увидит и сможет отредактировать
-        const botUrl = `https://t.me/${botUsername}`;
-        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(botUrl)}&text=${encodeURIComponent(message)}`;
+        // URL обязателен для Telegram Share, но мы используем минимальный URL бота
+        // Основной контент - это текст "@tohatchbot egg"
+        const botUrl = 'https://t.me/tohatchbot';
+        const shareUrl = telegramForwardButton(botUrl, message);
         
         if (tg) {
             // В Telegram WebApp используем openTelegramLink для открытия share диалога
