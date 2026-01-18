@@ -99,6 +99,89 @@
             </div>
         </div>
 
+        <!-- Admin Page -->
+        <div class="page" id="admin-page">
+            <div class="page-content">
+                <div class="page-header">
+                    <h2 class="page-title">Admin Panel</h2>
+                </div>
+
+                <!-- Statistics Section -->
+                <div class="admin-section">
+                    <h3 class="section-title">Statistics</h3>
+                    <div class="admin-stats-grid">
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-label">Total Users</div>
+                            <div class="admin-stat-value" id="admin-total-users">-</div>
+                        </div>
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-label">Online Users</div>
+                            <div class="admin-stat-value" id="admin-online-users">-</div>
+                        </div>
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-label">Active (24h)</div>
+                            <div class="admin-stat-value" id="admin-active-users">-</div>
+                        </div>
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-label">Total Eggs Sent</div>
+                            <div class="admin-stat-value" id="admin-total-eggs-sent">-</div>
+                        </div>
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-label">Total Eggs Hatched</div>
+                            <div class="admin-stat-value" id="admin-total-eggs-hatched">-</div>
+                        </div>
+                        <div class="admin-stat-card">
+                            <div class="admin-stat-label">Total Points</div>
+                            <div class="admin-stat-value" id="admin-total-points">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tasks Management Section -->
+                <div class="admin-section">
+                    <div class="admin-section-header">
+                        <h3 class="section-title">Tasks Management</h3>
+                        <button class="admin-add-task-btn" id="admin-add-task-btn">+ Add Task</button>
+                    </div>
+                    <div id="admin-tasks-list" class="admin-tasks-list">
+                        <div class="loading">Loading tasks...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Task Modal -->
+        <div class="modal" id="add-task-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add New Task</h3>
+                    <button class="modal-close" id="close-add-task-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="task-name">Task Name</label>
+                        <input type="text" id="task-name" placeholder="e.g., Subscribe to Channel" />
+                    </div>
+                    <div class="form-group">
+                        <label for="task-avatar">Avatar URL</label>
+                        <input type="text" id="task-avatar" placeholder="https://..." />
+                    </div>
+                    <div class="form-group">
+                        <label for="task-channel">Channel</label>
+                        <input type="text" id="task-channel" placeholder="@channel_username" />
+                    </div>
+                    <div class="form-group">
+                        <label for="task-reward">Reward (Eggs)</label>
+                        <input type="number" id="task-reward" placeholder="20" min="0" />
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn-secondary" id="cancel-add-task">Cancel</button>
+                        <button class="btn-primary" id="save-add-task">Save Task</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Profile Page -->
         <div class="page" id="profile-page">
             <div class="page-content">
@@ -184,6 +267,12 @@
                     <div id="nav-profile-icon" class="nav-icon-animation"></div>
                 </div>
                 <span class="nav-label">Profile</span>
+            </button>
+            <button class="nav-item" data-page="admin-page" id="admin-nav-item" style="display: none;">
+                <div class="nav-icon-container">
+                    <div id="nav-admin-icon" class="nav-icon-animation">⚙️</div>
+                </div>
+                <span class="nav-label">Admin</span>
             </button>
         </nav>
     </div>
