@@ -358,8 +358,8 @@ function displayTasks(tasks) {
         taskCard.className = 'task-card';
         taskCard.id = `task-${task.id}`;
         
-        // Проверяем, выполнена ли задача (будет реализовано через API)
-        const isCompleted = false; // TODO: проверить через API
+        // Проверяем, выполнена ли задача
+        const isCompleted = false; // Будет проверяться при загрузке через updateTaskStatus
         
         taskCard.innerHTML = `
             <div class="task-icon">
@@ -386,49 +386,116 @@ function displayTasks(tasks) {
     });
 }
 
+// Функция для нормализации ссылки t.me
+function normalizeTelegramLink(link) {
+    if (!link) return null;
+    
+    // Убираем пробелы
+    link = link.trim();
+    
+    // Если уже полная ссылка
+    if (link.startsWith('https://t.me/') || link.startsWith('http://t.me/')) {
+        return link.replace('http://', 'https://');
+    }
+    
+    // Если начинается с t.me/
+    if (link.startsWith('t.me/')) {
+        return 'https://' + link;
+    }
+    
+    // Если начинается с @
+    if (link.startsWith('@')) {
+        return 'https://t.me/' + link.substring(1);
+    }
+    
+    // Иначе добавляем https://t.me/
+    return 'https://t.me/' + link;
+}
+
 async function completeTask(task) {
     const userId = getUserID();
     if (!userId) return;
     
     const tg = window.Telegram?.WebApp;
     
-    // Открываем канал
-    if (tg && task.channel) {
-        tg.openTelegramLink(`https://t.me/${task.channel.replace('@', '')}`);
-    } else if (task.channel) {
-        window.open(`https://t.me/${task.channel.replace('@', '')}`, '_blank');
+    // Нормализуем ссылку
+    const link = normalizeTelegramLink(task.channel);
+    if (!link) {
+        if (tg) {
+            tg.showAlert('Invalid link');
+        } else {
+            alert('Invalid link');
+        }
+        return;
+    }
+    
+    // Открываем ссылку
+    if (tg) {
+        tg.openTelegramLink(link);
+    } else {
+        window.open(link, '_blank');
     }
     
     // Ждем немного и проверяем подписку
     setTimeout(async () => {
         try {
-            // Проверяем подписку через API бота (если есть такой эндпоинт)
-            // Для простоты, помечаем задачу как выполненную после клика
-            // В реальности нужно проверять подписку через бота
+            // Проверяем подписку через API бота
+            const checkResponse = await fetch(`${BOT_API_URL}/api/tasks/check_subscription?user_id=${userId}&task_id=${task.id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    link: link
+                })
+            });
             
-            // Отмечаем задачу как выполненную
-            const taskCard = document.getElementById(`task-${task.id}`);
-            const taskBtn = document.getElementById(`task-btn-${task.id}`);
-            
-            if (taskCard && taskBtn) {
-                taskCard.style.opacity = '0.7';
-                taskCard.classList.add('completed');
-                taskBtn.textContent = 'Completed';
-                taskBtn.classList.add('completed');
-                taskBtn.disabled = true;
-            }
-            
-            // Обновляем статистику
-            await loadStats();
-            await loadProfile();
-            
-            if (tg) {
-                tg.showAlert(`Task completed! You earned ${task.reward || 0} Eggs! 🎉`);
+            if (checkResponse.ok) {
+                const checkData = await checkResponse.json();
+                
+                if (checkData.subscribed) {
+                    // Задача выполнена - обновляем UI
+                    const taskCard = document.getElementById(`task-${task.id}`);
+                    const taskBtn = document.getElementById(`task-btn-${task.id}`);
+                    
+                    if (taskCard && taskBtn) {
+                        taskCard.style.opacity = '0.7';
+                        taskCard.classList.add('completed');
+                        taskBtn.textContent = 'Completed';
+                        taskBtn.classList.add('completed');
+                        taskBtn.disabled = true;
+                    }
+                    
+                    // Обновляем статистику
+                    await loadStats();
+                    await loadProfile();
+                    
+                    if (tg) {
+                        tg.showAlert(`Task completed! You earned ${task.reward || 0} Eggs! 🎉`);
+                    }
+                } else {
+                    // Пользователь еще не подписался
+                    if (tg) {
+                        tg.showAlert('Please subscribe to complete this task');
+                    } else {
+                        alert('Please subscribe to complete this task');
+                    }
+                }
+            } else {
+                const errorData = await checkResponse.json().catch(() => ({}));
+                console.error('Error checking subscription:', errorData);
+                if (tg) {
+                    tg.showAlert('Error checking subscription. Please try again.');
+                }
             }
         } catch (error) {
             console.error('Error completing task:', error);
+            if (tg) {
+                tg.showAlert('Error checking subscription. Please try again.');
+            }
         }
-    }, 2000);
+    }, 3000); // Увеличиваем время ожидания до 3 секунд
 }
 
 async function updateTaskStatus() {
@@ -441,7 +508,7 @@ async function updateTaskStatus() {
         if (response.ok) {
             const data = await response.json();
             
-            // Check subscription task
+            // Check subscription task (старая задача подписки на @hatch_egg)
             const subscribeBtn = document.getElementById('subscribe-btn');
             const subscribeTask = document.getElementById('subscribe-task');
             
@@ -476,6 +543,38 @@ async function updateTaskStatus() {
                 }
             } else {
                 console.error('Failed to check subscription status:', checkSubResponse.status);
+            }
+            
+            // Обновляем статус задач из админ-панели
+            const tasksResponse = await fetch(`${BOT_API_URL}/api/tasks`);
+            if (tasksResponse.ok) {
+                const tasksData = await tasksResponse.json();
+                const tasks = tasksData.tasks || [];
+                
+                // Проверяем статус каждой задачи
+                for (const task of tasks) {
+                    const taskKey = `task_${task.id}`;
+                    const isCompleted = data.tasks && data.tasks[taskKey];
+                    
+                    const taskCard = document.getElementById(`task-${task.id}`);
+                    const taskBtn = document.getElementById(`task-btn-${task.id}`);
+                    
+                    if (taskCard && taskBtn) {
+                        if (isCompleted) {
+                            taskCard.style.opacity = '0.7';
+                            taskCard.classList.add('completed');
+                            taskBtn.textContent = 'Completed';
+                            taskBtn.classList.add('completed');
+                            taskBtn.disabled = true;
+                        } else {
+                            taskCard.style.opacity = '1';
+                            taskCard.classList.remove('completed');
+                            taskBtn.textContent = 'Complete';
+                            taskBtn.classList.remove('completed');
+                            taskBtn.disabled = false;
+                        }
+                    }
+                }
             }
         }
     } catch (error) {
@@ -922,7 +1021,7 @@ function displayAdminTasks(tasks) {
             <div class="admin-task-info">
                 <div class="admin-task-name">${task.name || 'Unnamed Task'}</div>
                 <div class="admin-task-details">
-                    Channel: ${task.channel || 'N/A'} | Reward: ${task.reward || 0} Eggs
+                    Link: ${task.channel || 'N/A'} | Reward: ${task.reward || 0} Eggs
                 </div>
             </div>
             <div class="admin-task-actions">
