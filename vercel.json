@@ -1,0 +1,13 @@
+{
+  "outputDirectory": ".",
+  "routes": [
+    {
+      "src": "/eggchain",
+      "dest": "/eggchain.html"
+    },
+    {
+      "src": "/",
+      "dest": "/index.html"
+    }
+  ]
+}

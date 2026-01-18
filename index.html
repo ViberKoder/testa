@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Hatch - Egg Hatching</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <script src="/api/config.js"></script>
+</head>
+<body>
+    <div class="background-container">
+        <div class="background-image"></div>
+    </div>
+    
+    <div class="app-container">
+        <!-- Home Page -->
+        <div class="page active" id="home-page">
+            <div class="content">
+                <div class="egg-container">
+                    <div id="egg-animation" class="egg-image"></div>
+                </div>
+                
+                <div class="counter-container">
+                    <div class="counter" id="points-counter">0</div>
+                </div>
+                
+                <div class="share-button-container">
+                    <button class="share-button" id="share-egg-btn">
+                        <img src="https://lime-gigantic-quelea-995.mypinata.cloud/ipfs/bafkreigkyk7a7453h4y5josptbv6itfwtihco44wrwuzr4fmflkttm25wa" alt="Share Egg" class="share-button-image">
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- More Egg Page -->
+        <div class="page" id="more-page">
+            <div class="page-content">
+                <div class="page-header">
+                    <h2 class="page-title">More Eggs</h2>
+                </div>
+
+                <!-- Tasks Section -->
+                <div class="tasks-section">
+                    <h3 class="section-title">Complete Tasks</h3>
+                    
+                    <div class="task-card" id="subscribe-task">
+                        <div class="task-icon">
+                            <div id="more-icon" class="task-icon-animation"></div>
+                        </div>
+                        <div class="task-info">
+                            <div class="task-name">Subscribe to Hatch Egg</div>
+                            <div class="task-reward">+20 Eggs</div>
+                        </div>
+                        <button class="task-button" id="subscribe-btn">Complete</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Explorer Page -->
+        <div class="page" id="explorer-page">
+            <div class="page-content">
+                <div class="page-header">
+                    <h2 class="page-title">Eggchain Explorer</h2>
+                </div>
+
+                <div class="explorer-container">
+                    <!-- Search Section -->
+                    <div class="explorer-search-section">
+                        <div class="search-box-explorer">
+                            <input 
+                                type="text" 
+                                id="explorer-egg-id-input" 
+                                placeholder="Enter egg ID or @username..."
+                                class="search-input-explorer"
+                            />
+                            <button id="explorer-search-btn" class="search-btn-explorer">Search</button>
+                        </div>
+                        <div id="explorer-search-result" class="explorer-result"></div>
+                    </div>
+
+                    <!-- User Eggs History (shown when viewing user profile) -->
+                    <div id="user-eggs-history-container" class="explorer-eggs-list" style="display: none;">
+                    </div>
+                    
+                    <!-- My Eggs Section -->
+                    <div class="explorer-my-eggs-section" id="my-eggs-section">
+                        <h3 class="section-title">My Eggs</h3>
+                        <div id="explorer-my-eggs-list" class="explorer-eggs-list">
+                            <div class="loading">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Page -->
+        <div class="page" id="profile-page">
+            <div class="page-content">
+                <div class="profile-header">
+                    <div class="profile-avatar-container">
+                        <div id="profile-icon" class="profile-icon-animation"></div>
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-name" id="profile-name">User</div>
+                        <div class="profile-id" id="profile-id">ID: -</div>
+                    </div>
+                </div>
+
+                <!-- TON Connect Section -->
+                <div class="ton-connect-section">
+                    <div id="ton-connect-container"></div>
+                </div>
+
+                <!-- Eggs Balance Section -->
+                <div class="eggs-balance-section">
+                    <div class="stat-card">
+                        <div class="stat-label">Available Eggs</div>
+                        <div class="stat-value" id="eggs-balance">0</div>
+                    </div>
+                </div>
+
+                <!-- Referrals Section -->
+                <div class="referrals-section">
+                    <div class="stat-row">
+                        <div class="stat-item">
+                            <div class="stat-label">Referrals</div>
+                            <div class="stat-value" id="referrals-count">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Earned from Referrals</div>
+                            <div class="stat-value" id="referral-earnings">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- How it works Section -->
+                <div class="how-it-works-section">
+                    <h3 class="section-title">How it works</h3>
+                    <div class="info-card">
+                        <p>Send eggs through @tohatchbot in any chat. Only recipients can hatch your eggs!</p>
+                        <div class="points-info">
+                            <div class="point-item">
+                                <span class="point-icon">+2</span>
+                                <span class="point-text">Hatch when someone hatches your egg</span>
+                            </div>
+                            <div class="point-item">
+                                <span class="point-icon">+1</span>
+                                <span class="point-text">Hatch when you hatch someone's egg</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-page="home-page">
+                <div class="nav-icon-container">
+                    <div id="nav-home-icon" class="nav-icon-animation"></div>
+                </div>
+                <span class="nav-label">Home</span>
+            </button>
+            <button class="nav-item" data-page="more-page">
+                <div class="nav-icon-container">
+                    <div id="nav-more-icon" class="nav-icon-animation"></div>
+                </div>
+                <span class="nav-label">More</span>
+            </button>
+            <button class="nav-item" data-page="explorer-page">
+                <div class="nav-icon-container">
+                    <div id="nav-explorer-icon" class="nav-icon-animation"></div>
+                </div>
+                <span class="nav-label">Explorer</span>
+            </button>
+            <button class="nav-item" data-page="profile-page">
+                <div class="nav-icon-container">
+                    <div id="nav-profile-icon" class="nav-icon-animation"></div>
+                </div>
+                <span class="nav-label">Profile</span>
+            </button>
+        </nav>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

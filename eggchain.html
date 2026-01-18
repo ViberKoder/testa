@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eggchain Explorer</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="eggchain.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <img src="egg-icon.tgs" alt="Egg" class="egg-icon" id="eggIcon">
+                <h1>Eggchain Explorer</h1>
+            </div>
+            <p class="subtitle">Оффчейн блокчейн для яиц</p>
+        </header>
+
+        <div class="search-section">
+            <h2>Поиск яйца</h2>
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    id="eggIdInput" 
+                    placeholder="Введите идентификатор яйца..."
+                    class="search-input"
+                />
+                <button id="searchBtn" class="search-btn">🔍 Поиск</button>
+            </div>
+            <div id="searchResult" class="search-result"></div>
+        </div>
+
+        <div class="my-eggs-section">
+            <h2>Мои яйца</h2>
+            <div id="myEggsList" class="eggs-list">
+                <div class="loading">Загрузка...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/api/config.js"></script>
+    <script src="eggchain.js"></script>
+</body>
+</html>

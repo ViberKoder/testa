@@ -1,0 +1,12 @@
+{
+  "name": "hatchapp",
+  "version": "1.0.0",
+  "description": "Hatch mini app for Telegram",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ViberKoder/hatchapp.git"
+  }
+}
