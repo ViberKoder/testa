@@ -776,6 +776,14 @@ function init() {
     
     // Check admin access on startup
     checkAdminAccess();
+    
+    // Проверяем URL параметр для прямого доступа к админ-панели (для тестирования)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'true') {
+        setTimeout(() => {
+            showPage('admin-page');
+        }, 1000);
+    }
 }
 
 // Admin Panel Functions
@@ -783,7 +791,11 @@ let isAdmin = false;
 
 async function checkAdminAccess() {
     const userId = getUserID();
+    console.log('Checking admin access for user:', userId);
+    console.log('BOT_API_URL:', BOT_API_URL);
+    
     if (!userId) {
+        console.log('No user ID found');
         const adminNavItem = document.getElementById('admin-nav-item');
         if (adminNavItem) {
             adminNavItem.style.display = 'none';
@@ -792,19 +804,28 @@ async function checkAdminAccess() {
     }
     
     // Проверяем доступ к админ-панели через API
+    const adminUrl = `${BOT_API_URL}/api/admin/stats?user_id=${userId}`;
+    console.log('Fetching admin stats from:', adminUrl);
+    
     try {
-        const response = await fetch(`${BOT_API_URL}/api/admin/stats?user_id=${userId}`);
+        const response = await fetch(adminUrl);
+        console.log('Admin access response status:', response.status);
+        
         if (response.ok) {
             isAdmin = true;
+            console.log('Admin access granted!');
             // Показываем кнопку админ-панели в навигации
             const adminNavItem = document.getElementById('admin-nav-item');
             if (adminNavItem) {
                 adminNavItem.style.display = 'flex';
+                console.log('Admin nav item shown');
             }
             loadAdminStats();
             loadAdminTasks();
         } else if (response.status === 403) {
-            // Доступ запрещен - скрываем админ-панель
+            // Доступ запрещен
+            const errorData = await response.json().catch(() => ({}));
+            console.log('Admin access denied (403):', errorData);
             isAdmin = false;
             const adminNavItem = document.getElementById('admin-nav-item');
             if (adminNavItem) {
@@ -814,10 +835,14 @@ async function checkAdminAccess() {
             if (currentPage === 'admin-page') {
                 showPage('home-page');
                 if (tg) {
-                    tg.showAlert('Access denied');
+                    tg.showAlert('Access denied. Make sure OWNER_ID is set in bot environment variables.');
+                } else {
+                    alert('Access denied. Make sure OWNER_ID is set in bot environment variables.');
                 }
             }
         } else {
+            const errorText = await response.text().catch(() => 'Unknown error');
+            console.error('Admin access check failed:', response.status, errorText);
             isAdmin = false;
             const adminNavItem = document.getElementById('admin-nav-item');
             if (adminNavItem) {
@@ -826,6 +851,10 @@ async function checkAdminAccess() {
         }
     } catch (error) {
         console.error('Error checking admin access:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack
+        });
         isAdmin = false;
         const adminNavItem = document.getElementById('admin-nav-item');
         if (adminNavItem) {
