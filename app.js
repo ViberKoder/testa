@@ -1442,8 +1442,12 @@ function displayMyEggs(eggs) {
     }
 
     eggsListDiv.innerHTML = eggs.map(egg => {
-        const hatchedStatus = egg.hatched_by ? 'hatched' : 'pending';
-        const hatchedText = egg.hatched_by ? 'Hatched' : 'Pending';
+        // Для multi eggs считаем вылупленным, если hatched_count > 0
+        const isMultiEgg = egg.is_multi === true;
+        const isHatched = isMultiEgg ? (egg.hatched_count > 0) : (egg.hatched_by ? true : false);
+        
+        const hatchedStatus = isHatched ? 'hatched' : 'pending';
+        const hatchedText = isHatched ? 'Hatched' : 'Pending';
         const timestampSent = egg.timestamp_sent ? new Date(egg.timestamp_sent).toLocaleString('en-US') : 'Unknown';
         const timeAgo = egg.timestamp_sent ? getTimeAgo(new Date(egg.timestamp_sent)) : '';
 
@@ -1452,10 +1456,11 @@ function displayMyEggs(eggs) {
                 <div class="egg-list-item-header">
                     <span class="egg-list-id mono">#${egg.egg_id.substring(0, 12)}...</span>
                     <span class="status-badge ${hatchedStatus}">${hatchedText}</span>
+                    ${isMultiEgg && egg.hatched_count > 0 ? `<span class="egg-multi-badge-small">(${egg.hatched_count}${egg.max_hatches ? `/${egg.max_hatches}` : ''})</span>` : ''}
                 </div>
                 <div class="egg-list-meta">
                     <div>Sent: ${timestampSent}${timeAgo ? ` (${timeAgo})` : ''}</div>
-                    ${egg.hatched_by ? `<div>Hatched by: ${egg.hatched_by_username ? `<span class="username-link-inline" onclick="event.stopPropagation(); searchUserByUsername('${egg.hatched_by_username}');">@${egg.hatched_by_username}</span>` : `ID: ${egg.hatched_by}`}</div>` : '<div>Awaiting hatch</div>'}
+                    ${isHatched ? `<div>Hatched by: ${egg.hatched_by_username ? `<span class="username-link-inline" onclick="event.stopPropagation(); searchUserByUsername('${egg.hatched_by_username}');">@${egg.hatched_by_username}</span>` : `ID: ${egg.hatched_by || 'Multiple'}`}</div>` : '<div>Awaiting hatch</div>'}
                 </div>
             </div>
         `;
