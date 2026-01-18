@@ -531,6 +531,8 @@ function setupSubscribeButton() {
 // Buy Eggs - removed for beta (unlimited eggs)
 
 // Share Button
+// Используем Telegram Share Button согласно документации: https://core.telegram.org/widgets/share
+// Формат: https://t.me/share/url?url={url}&text={text}
 function setupShareButton() {
     const shareBtn = document.getElementById('share-egg-btn');
     if (!shareBtn) return;
@@ -540,13 +542,14 @@ function setupShareButton() {
         const message = '@tohatchbot egg';
         const botUsername = 'tohatchbot';
         
+        // Используем Telegram Share Button формат
+        // URL обязателен для Telegram Share, используем URL бота
+        // Текст будет основным содержимым, которое пользователь увидит и сможет отредактировать
+        const botUrl = `https://t.me/${botUsername}`;
+        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(botUrl)}&text=${encodeURIComponent(message)}`;
+        
         if (tg) {
-            // Используем Telegram WebApp API для открытия бота с текстом сообщения
-            // Формируем ссылку для отправки сообщения боту напрямую через share
-            // Используем специальный формат для пересылки сообщения
-            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent('https://t.me/' + botUsername)}&text=${encodeURIComponent(message)}`;
-            
-            // Используем openTelegramLink для открытия в Telegram приложении
+            // В Telegram WebApp используем openTelegramLink для открытия share диалога
             if (tg.openTelegramLink) {
                 tg.openTelegramLink(shareUrl);
             } else if (tg.openLink) {
@@ -555,32 +558,12 @@ function setupShareButton() {
                     try_instant_view: false
                 });
             } else {
-                // Последний fallback
+                // Последний fallback - открываем в новом окне
                 window.open(shareUrl, '_blank');
             }
         } else {
-            // Fallback для обычного браузера
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Send Egg',
-                    text: message,
-                    url: `https://t.me/${botUsername}`
-                }).catch(err => {
-                    console.error('Error sharing:', err);
-                    // Копируем текст в буфер обмена как fallback
-                    navigator.clipboard.writeText(message).then(() => {
-                        alert('Message "@tohatchbot egg" copied to clipboard!');
-                    });
-                });
-            } else {
-                // Копируем текст в буфер обмена
-                navigator.clipboard.writeText(message).then(() => {
-                    alert('Message "@tohatchbot egg" copied to clipboard!');
-                }).catch(err => {
-                    console.error('Error copying to clipboard:', err);
-                    alert('Please copy this message manually: @tohatchbot egg');
-                });
-            }
+            // Fallback для обычного браузера - открываем share URL
+            window.open(shareUrl, '_blank');
         }
     });
 }
