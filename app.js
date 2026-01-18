@@ -531,15 +531,8 @@ function setupSubscribeButton() {
 // Buy Eggs - removed for beta (unlimited eggs)
 
 // Share Button
-// Адаптация PHP кода из документации Telegram Share Button
-// https://core.telegram.org/widgets/share
-// Формат: https://t.me/share/url?url={url}&text={text}
-function telegramForwardButton(url, text = '') {
-    // Используем rawurlencode эквивалент в JavaScript - encodeURIComponent
-    const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text);
-    return shareUrl;
-}
-
+// Кнопка работает как "Send 🥚" в Telegram - открывает бота с предзаполненным текстом "@tohatchbot egg"
+// Используем формат для открытия inline режима бота, как в кнопке switch_inline_query_current_chat="egg"
 function setupShareButton() {
     const shareBtn = document.getElementById('share-egg-btn');
     if (!shareBtn) return;
@@ -547,28 +540,45 @@ function setupShareButton() {
     shareBtn.addEventListener('click', () => {
         const tg = window.Telegram?.WebApp;
         const message = '@tohatchbot egg';
-        
-        // URL обязателен для Telegram Share, но мы используем минимальный URL бота
-        // Основной контент - это текст "@tohatchbot egg"
-        const botUrl = 'https://t.me/tohatchbot';
-        const shareUrl = telegramForwardButton(botUrl, message);
+        const botUsername = 'tohatchbot';
         
         if (tg) {
-            // В Telegram WebApp используем openTelegramLink для открытия share диалога
-            if (tg.openTelegramLink) {
-                tg.openTelegramLink(shareUrl);
-            } else if (tg.openLink) {
-                // Fallback на openLink
-                tg.openLink(shareUrl, {
-                    try_instant_view: false
-                });
-            } else {
-                // Последний fallback - открываем в новом окне
-                window.open(shareUrl, '_blank');
+            // Используем формат для открытия inline режима бота с текстом
+            // Это работает так же, как кнопка "Send 🥚" с switch_inline_query_current_chat="egg"
+            // Формат: tg://resolve?domain={bot_username}&start={query} для inline режима
+            // Но для inline режима нужно использовать специальный формат с параметром query
+            try {
+                // Используем формат для inline режима: tg://resolve?domain={bot}&start={query}
+                // Где query - это текст, который появится в поле ввода
+                const inlineQuery = 'egg'; // Используем только "egg", как в кнопке бота
+                const inlineUrl = `tg://resolve?domain=${botUsername}&start=${encodeURIComponent(inlineQuery)}`;
+                
+                if (tg.openTelegramLink) {
+                    // openTelegramLink открывает deep link в Telegram
+                    tg.openTelegramLink(inlineUrl);
+                } else if (tg.openLink) {
+                    // Fallback на openLink
+                    tg.openLink(inlineUrl, {
+                        try_instant_view: false
+                    });
+                } else {
+                    // Последний fallback - открываем через window.open
+                    window.open(inlineUrl, '_blank');
+                }
+            } catch (error) {
+                console.error('Error opening inline query:', error);
+                // Fallback на обычную ссылку бота
+                const botUrl = `https://t.me/${botUsername}?start=egg`;
+                if (tg.openTelegramLink) {
+                    tg.openTelegramLink(botUrl);
+                } else {
+                    window.open(botUrl, '_blank');
+                }
             }
         } else {
-            // Fallback для обычного браузера - открываем share URL
-            window.open(shareUrl, '_blank');
+            // Fallback для обычного браузера - открываем бота с inline запросом
+            const botUrl = `https://t.me/${botUsername}?start=egg`;
+            window.open(botUrl, '_blank');
         }
     });
 }
