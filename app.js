@@ -546,6 +546,7 @@ async function updateTaskStatus() {
             }
             
             // Обновляем статус задач из админ-панели
+            // tasks уже содержит информацию о выполненных задачах из data.tasks
             const tasksResponse = await fetch(`${BOT_API_URL}/api/tasks`);
             if (tasksResponse.ok) {
                 const tasksData = await tasksResponse.json();
@@ -554,7 +555,7 @@ async function updateTaskStatus() {
                 // Проверяем статус каждой задачи
                 for (const task of tasks) {
                     const taskKey = `task_${task.id}`;
-                    const isCompleted = data.tasks && data.tasks[taskKey];
+                    const isCompleted = data.tasks && data.tasks[taskKey] === true;
                     
                     const taskCard = document.getElementById(`task-${task.id}`);
                     const taskBtn = document.getElementById(`task-btn-${task.id}`);
